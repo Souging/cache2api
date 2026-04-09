@@ -21,8 +21,7 @@ A lightweight reverse-proxy gateway that sits between your AI coding client and 
 
 ### How It Works
 
-
-
+```
 
 Client (Cline / Cursor / aider / …)
 
