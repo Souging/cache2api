@@ -1,4 +1,4 @@
-```markdown
+
 # 🔄 Prompt Cache Gateway
 
 [English](#english) | [中文](#中文)
@@ -21,7 +21,8 @@ A lightweight reverse-proxy gateway that sits between your AI coding client and 
 
 ### How It Works
 
-```
+
+
 
 Client (Cline / Cursor / aider / …)
 
