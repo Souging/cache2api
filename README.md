@@ -172,7 +172,8 @@ Works with: **Cline**, **Cursor**, **aider**, **Open Interpreter**, **ChatGPT-Ne
 
 ### License
 
-MIT
+本项目基于 **GNU General Public License v3.0 (GPL-3.0)** 开源。
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ---
 
@@ -342,6 +343,8 @@ http://localhost:8000
 | `POST` | `/cache/clear` | 清空缓存 |
 
 ### 开源协议
+本项目基于 **GNU General Public License v3.0 (GPL-3.0)** 开源。
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 MIT
 ```
