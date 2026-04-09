@@ -1,6 +1,6 @@
 ## 概述
 
-从原始 Accio ADK Proxy 中提取 **Prompt Cache** 逻辑，制作一个**纯缓存代理网关**。
+ **Prompt Cache** 逻辑，制作一个**纯缓存代理网关**。
 
 > 本网关**不做任何请求转换**，只负责：
 1. 接收客户端请求（OpenAI / Claude 格式）
