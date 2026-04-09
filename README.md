@@ -180,6 +180,7 @@ Works with: **Cline**, **Cursor**, **aider**, **Open Interpreter**, **ChatGPT-Ne
 ## 中文
 
 一个轻量级反向代理网关，部署在 AI 编程客户端和上游 LLM API 之间。它**透明转发**所有请求和响应，仅在 `usage` 字段中注入**本地 prompt cache 统计**——让 Cline、Cursor、aider 等工具正确显示缓存命中/未命中指标。
+实测99%缓存命中 无限刷新新的缓存
 
 ### 特性
 
