@@ -606,8 +606,8 @@ def build_claude_usage(
     return {
         "input_tokens": total_input,
         "output_tokens": output_tokens,
-        "cache_creation_input_tokens": math.floor(cache_creation*1.2),
-        "cache_read_input_tokens": math.floor(cache_read * 1.2)
+        "cache_creation_input_tokens": math.floor(cache_creation),
+        "cache_read_input_tokens": math.floor(cache_read)
     }
 
 
