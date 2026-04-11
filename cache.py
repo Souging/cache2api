@@ -24,6 +24,7 @@ import logging
 import os
 import sqlite3
 import time
+import math
 import uuid
 from typing import AsyncGenerator, List, Dict, Any
 
@@ -52,7 +53,7 @@ log = logging.getLogger("cache_gateway")
 # ============================================================
 
 # 上游模型 API 地址（客户端请求原封不动转发到这里）
-UPSTREAM_BASE_URL = os.environ.get("UPSTREAM_BASE_URL", "http://localhost:11434")
+UPSTREAM_BASE_URL = os.environ.get("UPSTREAM_BASE_URL", "http://209.127.114.116:32001")
 
 # 缓存相关
 CACHE_DB_PATH = os.environ.get("CACHE_DB_PATH", "./prompt_cache.db")
@@ -587,6 +588,7 @@ def build_claude_usage(
     合并上游 usage + 本地缓存计算，输出 Claude 格式。
     """
     output_tokens = 0
+    log.info(f"[CACHE] upstream_usage:{upstream_usage}")
     if upstream_usage:
         output_tokens = upstream_usage.get("output_tokens", 0)
 
@@ -596,12 +598,16 @@ def build_claude_usage(
     total_input = cache_info["total_input_tokens"]
     cache_read = cache_info["cache_read_input_tokens"]
     cache_creation = cache_info["cache_creation_input_tokens"]
-
+    if cache_read  == 0 and cache_creation == 0:
+        total_input = total_input 
+    else:
+        total_input = total_input - cache_creation - cache_read 
+        total_input = max(total_input, 1)
     return {
         "input_tokens": total_input,
         "output_tokens": output_tokens,
-        "cache_creation_input_tokens": cache_creation,
-        "cache_read_input_tokens": cache_read,
+        "cache_creation_input_tokens": math.floor(cache_creation*1.2),
+        "cache_read_input_tokens": math.floor(cache_read * 1.2)
     }
 
 
@@ -770,9 +776,11 @@ async def _stream_openai(
                     continue
 
                 if "usage" in chunk and cache_info:
+                    log.info(f"778: {chunk['usage']}")
                     chunk["usage"] = build_openai_usage(
                         cache_info, chunk.get("usage")
                     )
+                    log.info(f"782: {chunk['usage']}")
                     yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
                 else:
                     yield line + "\n\n"
@@ -816,9 +824,12 @@ async def _batch_openai(
 
     # 替换 usage
     if cache_info:
+        
+        log.info(f"827: {data['usage']}")
         data["usage"] = build_openai_usage(
             cache_info, data.get("usage")
         )
+        log.info(f"831: {data['usage']}")
 
     # 存缓存
     if prompt_cache and cache_info:
@@ -950,25 +961,27 @@ async def _stream_claude(
                         and "message" in data
                         and "usage" in data["message"]
                     ):
+                        log.info(f"960: {data['message']['usage']}")
                         data["message"]["usage"] = build_claude_usage(
                             cache_info,
                             data["message"].get("usage"),
                         )
+                        log.info(f"967: {data['message']['usage']}")
                     # message_delta → data.usage
                     if (
                         event_type == "message_delta"
                         and "usage" in data
                     ):
-                        output_tokens = data["usage"].get(
-                            "output_tokens", 0
-                        )
-                        data["usage"] = {
-                            "output_tokens": output_tokens,
+                        
+                        log.info(f"973: {data['usage']}")
+                        output_tokens = data["usage"].get("output_tokens", 0)
+                        data["usage"] = {"output_tokens": output_tokens,
                             "cache_creation_input_tokens":
                                 cache_info["cache_creation_input_tokens"],
                             "cache_read_input_tokens":
                                 cache_info["cache_read_input_tokens"],
                         }
+                        log.info(f"981: {data['usage']}")
 
                 yield f"data: {json.dumps(data, ensure_ascii=False)}\n"
                 event_type = ""  # reset
@@ -1016,9 +1029,11 @@ async def _batch_claude(
     data = r.json()
 
     if cache_info and "usage" in data:
+        log.info(f"1029: {data['usage']}")
         data["usage"] = build_claude_usage(
             cache_info, data.get("usage")
         )
+        log.info(f"1033: {data['usage']}")
 
     if prompt_cache and cache_info:
         prompt_cache.store_prefix(
@@ -1040,7 +1055,7 @@ def main():
         description="Prompt Cache Gateway"
     )
     parser.add_argument("--host", default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--port", type=int, default=8001)
     parser.add_argument(
         "--upstream",
         default=UPSTREAM_BASE_URL,
